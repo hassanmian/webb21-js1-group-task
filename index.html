@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+</head>
+
+<body>
+    <form onsubmit="handleOnSubmit()">
+        <label for="coffeeChoice">Välj kaffesort</label>
+        <select id="coffeeChoice">
+            <!-- <option value="0">Brygg kaffe - 20 kr</option>
+            <option value="1">Cappucino - 30 kr</option>
+            <option value="2">Latte - 40 kr</option> -->
+        </select>
+        <label for="quantity">Antal</label>
+        <input id="quantity" value="1" type="number" />
+
+        <button type="submit">Köp</button>
+
+        <div id="totalAmount">
+
+        </div>
+
+        <div id="status">
+
+        </div>
+        <hr/>
+        <h2>Dina transaktioner</h2>
+        <div id="transactions">
+
+        </div>
+
+        
+    </form>
+
+    <script>
+        const transactions = []
+        const coffees = [
+            {name: 'Brygg Kaffe', price: 20},
+            {name: 'Cappucino', price: 30},
+            {name: 'Latte', price: 40}
+        ]
+
+        function renderCoffeeChoices() {
+            const coffeeSelector = document.getElementById("coffeeChoice")
+            coffees.forEach((coffee, index) => {
+                const option = document.createElement('option')
+                option.value = index
+                option.innerHTML = `${coffee.name} - ${coffee.price} SEK`
+                coffeeSelector.appendChild(option)
+            })
+        }
+
+        function renderTransactions() {
+            const container = document.getElementById("transactions")
+            container.innerHTML = ""
+            transactions.reverse().forEach(transaction => {
+                const transactionDiv = document.createElement('div')
+                transactionDiv.innerText = `
+                    Du köpte ${transaction.quantity} st ${transaction.name} för ${transaction.price} kr styck. Summa: ${transaction.total}
+                `
+                container.appendChild(transactionDiv)
+            })
+        }
+
+        function renderTotalTransactionAmount() {
+            const container = document.getElementById("totalAmount")
+            let totalAmount = 0
+            transactions.forEach(transaction => {
+                totalAmount += transaction.total
+            })
+            container.innerText = `Du har handlat för ${totalAmount} kr`
+        }
+
+        function renderStatus() {
+            const container = document.getElementById("status")
+            let status = ""
+            let totalCups = 0
+            transactions.forEach(transaction => {
+                totalCups += parseInt(transaction.quantity)
+            })
+            if(totalCups<10) {
+                status = "Brons"
+            } else if(10 <= totalCups && totalCups < 30) {
+                status = "Silver"
+            } else if(totalCups >= 30) {
+                status = "Guld"
+            }
+            container.innerText = `Medlemskapsstatus: ${status}`
+        }
+
+        function handleOnSubmit() {
+            event.preventDefault()
+            const coffeeSelector = document.getElementById("coffeeChoice")
+            const quantitySelector = document.getElementById("quantity")
+            const coffeeSelection = coffeeSelector.value
+            const quantity = quantitySelector.value
+
+            const chosenProduct = coffees[coffeeSelection]
+            const transaction = {
+                'name': chosenProduct.name,
+                'price': chosenProduct.price,
+                'quantity': quantity,
+                'total': quantity * chosenProduct.price
+            }
+            transactions.push(transaction)
+            renderTransactions()
+            renderTotalTransactionAmount()
+            renderStatus()
+        }
+    </script>
+</body>
+
+</html>
