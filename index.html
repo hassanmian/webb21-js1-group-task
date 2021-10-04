@@ -45,9 +45,9 @@
         const transactionContainer = document.getElementById("transactions")
 
         const coffees = [
-            {name: 'Brygg Kaffe', price: 20},
-            {name: 'Cappucino', price: 30},
-            {name: 'Latte', price: 40}
+            {name: 'Brygg Kaffe', price: 10, selected: false},
+            {name: 'Latte', price: 45, selected: true},
+            {name: 'Cappucino', price: 25, selected: false},
         ]
 
         function renderCoffeeChoices() {
@@ -55,6 +55,7 @@
                 const option = document.createElement('option')
                 option.value = index
                 option.innerHTML = `${coffee.name} - ${coffee.price} SEK`
+                option.selected = coffee.selected
                 coffeeSelector.appendChild(option)
             })
         }
@@ -63,18 +64,32 @@
             transactionContainer.innerHTML = ""
             transactions.forEach(transaction => {
                 const transactionDiv = document.createElement('div')
-                transactionDiv.innerText = `
-                    Du köpte ${transaction.quantity} st ${transaction.name} för ${transaction.price} kr styck. Summa: ${transaction.total}
+                let message = `
+                    Du har köpt ${transaction.name} för ${transaction.price} SEK. Totalt värde: ${transaction.total}.
+                    Du var ${transaction.membership} när denna transaktion utfördes.
                 `
+                if(transaction.membership !== "Ultra Premium") {
+                    message += `Handla ${transaction.cupsUntilNextStatus} koppar till för att uppnå ${getNextLevel(transaction.membership)}`
+                }
+                transactionDiv.innerText = message
                 transactionContainer.prepend(transactionDiv)
             })
+        }
+
+        function getNextLevel(level) {
+            if(level === "Normal") {
+                return "Premium"
+            } else if(level === "Premium") {
+                return "Ultra Premium"
+            }
         }
 
         function getTotalAmount() {
             let totalAmount = 0
             transactions.forEach(transaction => {
-                totalAmount += transaction.total
+                totalAmount += transaction.total || 0
             })
+            console.log(totalAmount)
             return totalAmount
         }
 
@@ -83,28 +98,48 @@
             totalAmountContainer.innerText = `Du har handlat för ${totalAmount} kr`
         }
 
-        function renderStatus() {
-            let status = ""
+        function getTotalCups() {
             let totalCups = 0
             transactions.forEach(transaction => {
                 totalCups += parseInt(transaction.quantity)
             })
-            if(totalCups<10) {
-                status = "Brons"
-            } else if(10 <= totalCups && totalCups < 30) {
-                status = "Silver"
-            } else if(totalCups >= 30) {
-                status = "Guld"
+            return totalCups
+        }
+
+        function getCupsUntilNextStatus() {
+            const totalCups = getTotalCups()
+            if(totalCups < 5) {
+                return 5 - totalCups
+            } else if(totalCups >= 5 && totalCups < 15) {
+                return 15 - totalCups
+            } else {
+                return 0
             }
+        }
+
+        function getStatus() {
+            let status = ""
+            const totalCups = getTotalCups()
+            if(totalCups<5) {
+                status = "Normal"
+            } else if(5 <= totalCups && totalCups < 15) {
+                status = "Premium"
+            } else if(totalCups >= 15) {
+                status = "Ultra Premium"
+            }
+            return status
+        }
+
+        function renderStatus() {
+            const status = getStatus()
             statusContainer.innerText = `Medlemskapsstatus: ${status}`
         }
 
         function getDiscount() {
             const totalAmount = getTotalAmount()
-            console.log(totalAmount)
-            if(totalAmount < 1000 && totalAmount > 500) {
-                return 0.9
-            } else if(totalAmount >= 1000) {
+            if(totalAmount < 1200 && totalAmount > 800) {
+                return 0.95
+            } else if(totalAmount >= 1200) {
                 return 0.85
             }
             return 1
@@ -119,11 +154,17 @@
             const chosenProduct = coffees[coffeeSelection]
             const transaction = {
                 'name': chosenProduct.name,
-                'price': chosenProduct.price * getDiscount(),
                 'quantity': quantity,
-                'total': quantity * chosenProduct.price * getDiscount()
+                
             }
             transactions.push(transaction)
+            const latest = transactions[transactions.length - 1]
+            latest.membership = getStatus()
+            latest.total = quantity * chosenProduct.price * getDiscount()
+            latest.price = chosenProduct.price * getDiscount(),
+            latest.cupsUntilNextStatus = getCupsUntilNextStatus()
+            transaction[transactions.length - 1] = latest
+
             renderTransactions()
             renderTotalTransactionAmount()
             renderStatus()
