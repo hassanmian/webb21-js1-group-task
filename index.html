@@ -56,21 +56,26 @@
         function renderTransactions() {
             const container = document.getElementById("transactions")
             container.innerHTML = ""
-            transactions.reverse().forEach(transaction => {
+            transactions.forEach(transaction => {
                 const transactionDiv = document.createElement('div')
                 transactionDiv.innerText = `
                     Du köpte ${transaction.quantity} st ${transaction.name} för ${transaction.price} kr styck. Summa: ${transaction.total}
                 `
-                container.appendChild(transactionDiv)
+                container.prepend(transactionDiv)
             })
         }
 
-        function renderTotalTransactionAmount() {
-            const container = document.getElementById("totalAmount")
+        function getTotalAmount() {
             let totalAmount = 0
             transactions.forEach(transaction => {
                 totalAmount += transaction.total
             })
+            return totalAmount
+        }
+
+        function renderTotalTransactionAmount() {
+            const container = document.getElementById("totalAmount")
+            const totalAmount = getTotalAmount()
             container.innerText = `Du har handlat för ${totalAmount} kr`
         }
 
@@ -91,6 +96,17 @@
             container.innerText = `Medlemskapsstatus: ${status}`
         }
 
+        function getDiscount() {
+            const totalAmount = getTotalAmount()
+            console.log()
+            if(totalAmount > 500) {
+                return 0.9
+            } else if(totalAmount >= 1000) {
+                return 0.85
+            }
+            return 1
+        }
+
         function handleOnSubmit() {
             event.preventDefault()
             const coffeeSelector = document.getElementById("coffeeChoice")
@@ -101,15 +117,17 @@
             const chosenProduct = coffees[coffeeSelection]
             const transaction = {
                 'name': chosenProduct.name,
-                'price': chosenProduct.price,
+                'price': chosenProduct.price * getDiscount(),
                 'quantity': quantity,
-                'total': quantity * chosenProduct.price
+                'total': quantity * chosenProduct.price * getDiscount()
             }
             transactions.push(transaction)
             renderTransactions()
             renderTotalTransactionAmount()
             renderStatus()
         }
+
+        renderCoffeeChoices()
     </script>
 </body>
 
