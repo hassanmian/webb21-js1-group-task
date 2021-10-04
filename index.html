@@ -37,6 +37,13 @@
 
     <script>
         const transactions = []
+
+        const coffeeSelector = document.getElementById("coffeeChoice")
+        const quantitySelector = document.getElementById("quantity")
+        const totalAmountContainer = document.getElementById("totalAmount")
+        const statusContainer = document.getElementById("status")
+        const transactionContainer = document.getElementById("transactions")
+
         const coffees = [
             {name: 'Brygg Kaffe', price: 20},
             {name: 'Cappucino', price: 30},
@@ -44,7 +51,6 @@
         ]
 
         function renderCoffeeChoices() {
-            const coffeeSelector = document.getElementById("coffeeChoice")
             coffees.forEach((coffee, index) => {
                 const option = document.createElement('option')
                 option.value = index
@@ -54,14 +60,13 @@
         }
 
         function renderTransactions() {
-            const container = document.getElementById("transactions")
-            container.innerHTML = ""
+            transactionContainer.innerHTML = ""
             transactions.forEach(transaction => {
                 const transactionDiv = document.createElement('div')
                 transactionDiv.innerText = `
                     Du köpte ${transaction.quantity} st ${transaction.name} för ${transaction.price} kr styck. Summa: ${transaction.total}
                 `
-                container.prepend(transactionDiv)
+                transactionContainer.prepend(transactionDiv)
             })
         }
 
@@ -74,13 +79,11 @@
         }
 
         function renderTotalTransactionAmount() {
-            const container = document.getElementById("totalAmount")
             const totalAmount = getTotalAmount()
-            container.innerText = `Du har handlat för ${totalAmount} kr`
+            totalAmountContainer.innerText = `Du har handlat för ${totalAmount} kr`
         }
 
         function renderStatus() {
-            const container = document.getElementById("status")
             let status = ""
             let totalCups = 0
             transactions.forEach(transaction => {
@@ -93,13 +96,13 @@
             } else if(totalCups >= 30) {
                 status = "Guld"
             }
-            container.innerText = `Medlemskapsstatus: ${status}`
+            statusContainer.innerText = `Medlemskapsstatus: ${status}`
         }
 
         function getDiscount() {
             const totalAmount = getTotalAmount()
-            console.log()
-            if(totalAmount > 500) {
+            console.log(totalAmount)
+            if(totalAmount < 1000 && totalAmount > 500) {
                 return 0.9
             } else if(totalAmount >= 1000) {
                 return 0.85
@@ -109,8 +112,7 @@
 
         function handleOnSubmit() {
             event.preventDefault()
-            const coffeeSelector = document.getElementById("coffeeChoice")
-            const quantitySelector = document.getElementById("quantity")
+            
             const coffeeSelection = coffeeSelector.value
             const quantity = quantitySelector.value
 
